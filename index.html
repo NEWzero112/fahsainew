@@ -207,6 +207,23 @@ footer{
   .counter-label{font-size:6.5px}
   .counter-sep{font-size:14px}
 }
+
+.music-wrap{position:fixed;bottom:22px;right:22px;z-index:60;display:flex;gap:10px;align-items:center;}
+.music-btn{width:52px;height:52px;border-radius:50%;background:rgba(250,247,242,.92);backdrop-filter:blur(10px);border:1px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(42,37,32,.18);transition:transform .3s,background .3s;}
+.music-btn:hover{transform:scale(1.08);background:#fff;}
+.music-btn.playing{background:var(--accent);color:#fff;border-color:var(--accent);animation:pulseBtn 2.5s ease-in-out infinite;}
+@keyframes pulseBtn{0%,100%{box-shadow:0 6px 24px rgba(168,102,82,.35)}50%{box-shadow:0 6px 34px rgba(168,102,82,.6)}}
+.music-eq{display:flex;gap:2.5px;align-items:flex-end;height:16px;}
+.music-eq span{width:3px;background:currentColor;border-radius:2px;animation:eq 1s ease-in-out infinite;}
+.music-eq span:nth-child(1){height:6px;animation-delay:0s}
+.music-eq span:nth-child(2){height:14px;animation-delay:.2s}
+.music-eq span:nth-child(3){height:9px;animation-delay:.4s}
+.music-eq span:nth-child(4){height:12px;animation-delay:.1s}
+@keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.music-next{width:40px;height:40px;font-size:14px;}
+.music-hint{position:fixed;bottom:86px;right:22px;z-index:60;background:rgba(42,37,32,.85);color:#fff;padding:8px 14px;border-radius:20px;font-size:11px;letter-spacing:.08em;animation:hintFloat 2s ease-in-out infinite;pointer-events:none;}
+@keyframes hintFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
 </style>
 </head>
 <body>
@@ -409,7 +426,81 @@ footer{
     if(e.key==='ArrowRight') next();
     if(e.key==='ArrowLeft') prev();
   });
+
+  // ===== Background music: random song each load, auto-advance playlist =====
+  var songs = [
+    'https://drive.usercontent.google.com/download?id=1OyHYUPypO94scrlqH_8gbqbyoictS4zm&export=download',
+    'https://drive.usercontent.google.com/download?id=1tKhPJHdVlwDv9lPlURuBCFH-y2U-7GxX&export=download',
+    'https://drive.usercontent.google.com/download?id=1KGn7Acugid6UyLylL1LKZyuqnHLZiNvC&export=download',
+    'https://drive.usercontent.google.com/download?id=1D-UoNcU_R-hGycG5N46x8l0IVLerIrRa&export=download',
+    'https://drive.usercontent.google.com/download?id=1UKsbFvgKVg_41EIu_YY10vBoP50xlJog&export=download'
+  ];
+  var audio = document.getElementById('bgMusic');
+  var musicBtn = document.getElementById('musicBtn');
+  var musicNext = document.getElementById('musicNext');
+  var playIcon = document.getElementById('playIcon');
+  var eqIcon = document.getElementById('eqIcon');
+  var musicHint = document.getElementById('musicHint');
+  var songIdx = Math.floor(Math.random() * songs.length);
+  var isPlaying = false;
+  audio.volume = 0.3;
+
+  function loadSong(i){ songIdx = i; audio.src = songs[i]; }
+  function playMusic(){
+    audio.play().then(function(){
+      isPlaying = true;
+      musicBtn.classList.add('playing');
+      playIcon.style.display = 'none';
+      eqIcon.style.display = 'flex';
+      musicNext.style.display = 'flex';
+      musicHint.style.display = 'none';
+    }).catch(function(){ /* autoplay blocked — wait for user click */ });
+  }
+  function pauseMusic(){
+    audio.pause();
+    isPlaying = false;
+    musicBtn.classList.remove('playing');
+    playIcon.style.display = 'block';
+    eqIcon.style.display = 'none';
+  }
+  loadSong(songIdx);
+
+  musicBtn.addEventListener('click', function(){
+    if(isPlaying){ pauseMusic(); } else { playMusic(); }
+  });
+  musicNext.addEventListener('click', function(){
+    loadSong((songIdx+1) % songs.length);
+    if(isPlaying){ audio.play(); }
+  });
+  audio.addEventListener('ended', function(){
+    loadSong((songIdx+1) % songs.length);
+    audio.play();
+  });
+  // Try autoplay on load; if blocked, hint stays visible until first click
+  playMusic();
+  // First interaction anywhere also starts music (mobile-friendly)
+  var firstInteract = function(){
+    if(!isPlaying){ playMusic(); }
+    document.removeEventListener('click', firstInteract);
+    document.removeEventListener('touchstart', firstInteract);
+  };
+  document.addEventListener('click', firstInteract);
+  document.addEventListener('touchstart', firstInteract);
+
 })();
 </script>
+
+<audio id="bgMusic" preload="auto"></audio>
+<div class="music-hint" id="musicHint">กดเพื่อเปิดเพลง ♪</div>
+<div class="music-wrap">
+  <button class="music-btn music-next" id="musicNext" aria-label="Next song" style="display:none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+  </button>
+  <button class="music-btn" id="musicBtn" aria-label="Play music">
+    <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+    <div id="eqIcon" class="music-eq" style="display:none;"><span></span><span></span><span></span><span></span></div>
+  </button>
+</div>
+
 </body>
 </html>
