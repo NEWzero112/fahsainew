@@ -270,6 +270,19 @@ footer{
   <div class="lb-counter" id="lbCounter"></div>
 </div>
 
+<audio id="bgMusic" preload="auto"></audio>
+<div class="music-hint" id="musicHint">กดเพื่อเปิดเพลง ♪</div>
+<div class="music-wrap">
+  <button class="music-btn music-next" id="musicNext" aria-label="Next song" style="display:none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+  </button>
+  <button class="music-btn" id="musicBtn" aria-label="Play music">
+    <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+    <div id="eqIcon" class="music-eq" style="display:none;"><span></span><span></span><span></span><span></span></div>
+  </button>
+</div>
+
+
 <script>
 (function(){
   // ===== Live together counter (since 6 Sep 2026 21:19 Bangkok time) =====
@@ -464,6 +477,7 @@ footer{
     eqIcon.style.display = 'none';
   }
   loadSong(songIdx);
+  audio.onerror = function(){ loadSong((songIdx+1) % songs.length); if(isPlaying){ audio.play(); } };
 
   musicBtn.addEventListener('click', function(){
     if(isPlaying){ pauseMusic(); } else { playMusic(); }
@@ -489,18 +503,6 @@ footer{
 
 })();
 </script>
-
-<audio id="bgMusic" preload="auto"></audio>
-<div class="music-hint" id="musicHint">กดเพื่อเปิดเพลง ♪</div>
-<div class="music-wrap">
-  <button class="music-btn music-next" id="musicNext" aria-label="Next song" style="display:none;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-  </button>
-  <button class="music-btn" id="musicBtn" aria-label="Play music">
-    <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
-    <div id="eqIcon" class="music-eq" style="display:none;"><span></span><span></span><span></span><span></span></div>
-  </button>
-</div>
 
 </body>
 </html>
