@@ -233,7 +233,7 @@ footer{
   <div class="hero-glow"></div>
   <div class="hero-glow2"></div>
   <div class="hero-inner">
-    <p class="hero-since hero-in">Since 06.09.2569</p>
+    <p class="hero-since hero-in">Since 06.09.2026</p>
     <h1 class="serif hero-title hero-in d1">New <span class="amp" style="font-size:.82em">&amp;</span> Fahsai</h1>
     <div class="hero-divider hero-in d2">
       <span class="line"></span><span class="dot"></span><span class="line"></span>
@@ -241,6 +241,7 @@ footer{
     <div class="hero-label hero-in d3">We are</div>
     <div id="counterRow" class="counter-row hero-in d4"></div>
     <div class="hero-label hero-in d4">Together</div>
+    <div id="anniversary" class="hero-in d4" style="margin-top:22px;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);font-weight:500;"></div>
   </div>
 </section>
 
@@ -364,12 +365,12 @@ footer{
   // ===== Gallery photos (12 images, asymmetric editorial grid) =====
   // span: [colSpan, rowSpan]
   var photos = [
-    {src:'https://img1.pic.in.th/images/1000002956.jpg', span:[2,1]},
-    {src:'https://img2.pic.in.th/1000002939.jpg', span:[2,1]},
-    {src:'https://img2.pic.in.th/1000002938334a322239e3af60.jpg', span:[1,2]},
-    {src:'https://img2.pic.in.th/1000002661.jpg', span:[1,2]},
+    {src:'https://img1.pic.in.th/images/1000002956.jpg', span:[1,1]},
+    {src:'https://img2.pic.in.th/1000002939.jpg', span:[1,1]},
+    {src:'https://img2.pic.in.th/1000002938334a322239e3af60.jpg', span:[1,1]},
+    {src:'https://img2.pic.in.th/1000002661.jpg', span:[1,1]},
     {src:'https://img1.pic.in.th/images/1000002559b503d55f6bec15df.jpg', span:[1,1]},
-    {src:'https://img2.pic.in.th/1000002699.webp', span:[1,2]}
+    {src:'https://img2.pic.in.th/1000002699.webp', span:[1,1]}
   ];
 
   var grid = document.getElementById('galleryGrid');
@@ -432,6 +433,34 @@ footer{
     if(e.key==='ArrowRight') next();
     if(e.key==='ArrowLeft') prev();
   });
+
+
+  // ===== Anniversary countdown (6th of every month, Bangkok time) =====
+  var annivEl = document.getElementById('anniversary');
+  function updateAnniversary(){
+    var now = new Date();
+    var nb = new Date(now.getTime() + (now.getTimezoneOffset()+BKK)*60000);
+    var day = nb.getDate();
+    if(day === 6){
+      annivEl.textContent = 'Happy Anniversary';
+      annivEl.style.animation = 'pulse 2s ease-in-out infinite';
+    } else {
+      var next6 = new Date(nb.getFullYear(), nb.getMonth(), 6, 21, 19, 0);
+      if(day > 6 || (day === 6 && nb.getHours() >= 21 && nb.getMinutes() >= 19)){
+        next6 = new Date(nb.getFullYear(), nb.getMonth()+1, 6, 21, 19, 0);
+      }
+      var diffMs = next6 - nb;
+      var days = Math.floor(diffMs / (1000*60*60*24));
+      var hours = Math.floor((diffMs % (1000*60*60*24)) / (1000*60*60));
+      if(days <= 0){
+        annivEl.textContent = hours + 'h until our anniversary';
+      } else {
+        annivEl.textContent = days + ' days until our anniversary';
+      }
+    }
+  }
+  updateAnniversary();
+  setInterval(updateAnniversary, 60000);
 
   // ===== Background music: random song each load, auto-advance playlist =====
   var songs = [
