@@ -112,7 +112,7 @@ nav{
 .gallery-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  grid-auto-rows:340px;
+  grid-auto-rows:240px;
   gap:16px;
   grid-auto-flow:dense;
 }
@@ -182,11 +182,11 @@ footer{
 
 /* Responsive */
 @media (max-width:1024px){
-  .gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:220px}
+  .gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:200px}
   .span-c3{grid-column:span 2}
 }
 @media (max-width:640px){
-  .gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:220px;gap:10px}
+  .gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:170px;gap:10px}
   .span-c3{grid-column:span 2}
   .span-c2{grid-column:span 2}
   .counter-row{gap:4px}
@@ -200,7 +200,7 @@ footer{
   .hero-label{font-size:10px;letter-spacing:.28em}
 }
 @media (max-width:380px){
-  .gallery-grid{grid-auto-rows:145px}
+  .gallery-grid{grid-auto-rows:150px}
   .counter-row{gap:3px}
   .counter-box{min-width:46px;padding:7px 3px 6px}
   .counter-num{font-size:18px}
@@ -224,10 +224,24 @@ footer{
 .music-hint{position:fixed;bottom:86px;right:22px;z-index:60;background:rgba(42,37,32,.85);color:#fff;padding:8px 14px;border-radius:20px;font-size:11px;letter-spacing:.08em;animation:hintFloat 2s ease-in-out infinite;pointer-events:none;}
 @keyframes hintFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
+
+/* Floating hearts & flowers (anniversary effect) */
+#particleLayer{position:fixed;inset:0;pointer-events:none;z-index:45;overflow:hidden;}
+.particle{position:absolute;bottom:-40px;opacity:0;animation:floatUp linear forwards;}
+.particle svg{display:block;filter:drop-shadow(0 2px 6px rgba(168,102,82,.25));}
+@keyframes floatUp{
+  0%{transform:translateY(0) rotate(0deg) scale(.6);opacity:0;}
+  10%{opacity:.9;}
+  90%{opacity:.7;}
+  100%{transform:translateY(-110vh) rotate(360deg) scale(1);opacity:0;}
+}
+.anniv-text{animation:pulse 2s ease-in-out infinite !important;}
+
 </style>
 </head>
 <body>
 <div class="grain"></div>
+<div id="particleLayer"></div>
 
 <section class="hero">
   <div class="hero-glow"></div>
@@ -365,12 +379,12 @@ footer{
   // ===== Gallery photos (12 images, asymmetric editorial grid) =====
   // span: [colSpan, rowSpan]
   var photos = [
-    {src:'https://img1.pic.in.th/images/1000002956.jpg', span:[1,1]},
-    {src:'https://img2.pic.in.th/1000002939.jpg', span:[1,1]},
-    {src:'https://img2.pic.in.th/1000002938334a322239e3af60.jpg', span:[1,1]},
-    {src:'https://img2.pic.in.th/1000002661.jpg', span:[1,1]},
-    {src:'https://img1.pic.in.th/images/1000002559b503d55f6bec15df.jpg', span:[1,1]},
-    {src:'https://img2.pic.in.th/1000002699.webp', span:[1,1]}
+    {src:'https://img1.pic.in.th/images/1000002956.jpg', span:[2,1]},
+    {src:'https://img2.pic.in.th/1000002939.jpg', span:[2,1]},
+    {src:'https://img2.pic.in.th/1000002938334a322239e3af60.jpg', span:[1,2]},
+    {src:'https://img2.pic.in.th/1000002661.jpg', span:[1,2]},
+    {src:'https://img1.pic.in.th/images/1000002559b503d55f6bec15df.jpg', span:[1,2]},
+    {src:'https://img2.pic.in.th/1000002699.webp', span:[1,2]}
   ];
 
   var grid = document.getElementById('galleryGrid');
@@ -436,15 +450,52 @@ footer{
 
 
   // ===== Anniversary countdown (6th of every month, Bangkok time) =====
+  // เปิด DEMO โหมดครบรอบ: เปลี่ยนเป็น false เพื่อให้แสดงแค่วันที่ 6 จริงๆ
+  var FORCE_ANNIVERSARY_DEMO = false;
   var annivEl = document.getElementById('anniversary');
+  var particleLayer = document.getElementById('particleLayer');
+  var particleTimer = null;
+
+  var HEART_SVG = '<svg width="W" height="W" viewBox="0 0 24 24" fill="C"><path d="M12 21s-7.5-4.9-10-9.5C.5 8 2.5 4 6.5 4c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3 4 0 6 4 4.5 7.5C19.5 16.1 12 21 12 21z"/></svg>';
+  var FLOWER_SVG = '<svg width="W" height="W" viewBox="0 0 24 24" fill="C"><circle cx="12" cy="6" r="4.5"/><circle cx="18" cy="12" r="4.5"/><circle cx="12" cy="18" r="4.5"/><circle cx="6" cy="12" r="4.5"/><circle cx="12" cy="12" r="3" fill="#f5d76e"/></svg>';
+  var COLORS = ['#e8a0a0','#d4788a','#a86652','#e8b4b8','#c98d9e','#f0c98d','#d4a5a5'];
+
+  function spawnParticle(){
+    var isHeart = Math.random() > 0.4;
+    var size = 14 + Math.random()*22;
+    var color = COLORS[Math.floor(Math.random()*COLORS.length)];
+    var svg = (isHeart ? HEART_SVG : FLOWER_SVG).replace(/W/g, size).replace('C', color);
+    var el = document.createElement('div');
+    el.className = 'particle';
+    el.innerHTML = svg;
+    el.style.left = (Math.random()*100) + 'vw';
+    var dur = 6 + Math.random()*7;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = (Math.random()*1.5) + 's';
+    particleLayer.appendChild(el);
+    setTimeout(function(){ el.remove(); }, (dur+2)*1000);
+  }
+  function startParticles(){
+    if(particleTimer) return;
+    for(var i=0;i<8;i++){ setTimeout(spawnParticle, i*250); }
+    particleTimer = setInterval(spawnParticle, 450);
+  }
+  function stopParticles(){
+    if(particleTimer){ clearInterval(particleTimer); particleTimer = null; }
+  }
+
   function updateAnniversary(){
     var now = new Date();
     var nb = new Date(now.getTime() + (now.getTimezoneOffset()+BKK)*60000);
     var day = nb.getDate();
-    if(day === 6){
+    var isAnniv = FORCE_ANNIVERSARY_DEMO || (day === 6 && nb.getHours() >= 21 && nb.getMinutes() >= 19) || (day === 7);
+    if(isAnniv){
       annivEl.textContent = 'Happy Anniversary';
-      annivEl.style.animation = 'pulse 2s ease-in-out infinite';
+      annivEl.classList.add('anniv-text');
+      startParticles();
     } else {
+      annivEl.classList.remove('anniv-text');
+      stopParticles();
       var next6 = new Date(nb.getFullYear(), nb.getMonth(), 6, 21, 19, 0);
       if(day > 6 || (day === 6 && nb.getHours() >= 21 && nb.getMinutes() >= 19)){
         next6 = new Date(nb.getFullYear(), nb.getMonth()+1, 6, 21, 19, 0);
